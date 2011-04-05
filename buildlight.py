@@ -77,16 +77,16 @@ class UsbLedMac:
 
 class HudsonBuildLight:
         
-    def __init__(self, host, port, job):
+    def __init__(self, host, port, jobs):
         self.host = host
         self.port = port
-        self.job = job
+        self.jobs = jobs
         self.usbled = self.get_usbled()
         
         # not mapped colors will default to blue
         # other colors returned by hudson: blue_anime red_anime grey grey_anime aborted
         self.color_map = { 'blue':'green', 'red':'red' }
-        self.default_color = 'blue'
+        self.default_color = 'red'
 
     def get_usbled(self):
         platform = os.uname()[0].lower()
@@ -96,13 +96,14 @@ class HudsonBuildLight:
             sys.exit(1)
         return usbled_platform_map[platform]()
 
-    def get_job_color(self):
+    def get_job_color(self, jobname):
         try:
             conn = httplib.HTTPConnection(self.host, self.port)
-            conn.request('GET','/job/%s/api/python' % self.job)
             conn.request('GET','/jenkins/job/%s/api/python' % jobname)
             job = eval(conn.getresponse().read())
-        except Exception:
+        except Exception as e:
+            print "ERROR: exception getting job"
+            print e
             return self.default_color
 
         job_color = job['color']
@@ -116,12 +117,30 @@ class HudsonBuildLight:
         method = methods_map[color]
         method()
 
+    def map_colors(self):
+        return map(lambda col: self.get_job_color(col), self.jobs)
+
+    def pick_color(self, colors, color):
+        return any( map(lambda job: (job == color), colors))
+
+    def reduce_colors(self):
+        job_colors = self.map_colors()
+        color_order = ['blue', 'red', 'green']
+        
+        for color in color_order:
+            if self.pick_color(job_colors, color):
+                return color
+        
+        return self.default_color
+
     def loop(self):
         self.set_usbled_color(self.default_color)
-        last_color = self.get_job_color()
+		
+        last_color = self.reduce_colors()
         self.set_usbled_color(last_color)
+
         while True:
-            color = self.get_job_color()
+            color = self.reduce_colors()
             if color != last_color:
                 self.set_usbled_color(color)
                 last_color = color
