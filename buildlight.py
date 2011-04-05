@@ -100,6 +100,7 @@ class HudsonBuildLight:
         try:
             conn = httplib.HTTPConnection(self.host, self.port)
             conn.request('GET','/job/%s/api/python' % self.job)
+            conn.request('GET','/jenkins/job/%s/api/python' % jobname)
             job = eval(conn.getresponse().read())
         except Exception:
             return self.default_color
