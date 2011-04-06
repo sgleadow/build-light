@@ -92,9 +92,7 @@ class HudsonBuildLight:
         self.jobs = jobs
         self.usbled = self.get_usbled()
         
-        # not mapped colors will default to blue
-        # other colors returned by hudson: blue_anime red_anime grey grey_anime aborted
-        self.color_map = { 'blue':'green', 'red':'red', 'blue_anime':'blue' }
+        self.color_map = { 'blue':'green', 'red':'red', 'blue_anime':'blue', 'red_anime':'blue', 'grey':'all', 'grey_anime':'all' }
         self.default_color = 'all'
 
     def get_usbled(self):
