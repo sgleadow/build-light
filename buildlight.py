@@ -43,6 +43,11 @@ class UsbLedLinux:
         self.set_light("green", 0)
         self.set_light("red", 0)
 
+    def all(self):
+        self.set_light("blue", 1)
+        self.set_light("green", 1)
+        self.set_light("red", 1)
+
 class UsbLedMac:
     
     def __init__(self):
@@ -75,6 +80,9 @@ class UsbLedMac:
     def off(self):
         self.send(0x00)
 
+    def all(self):
+        self.send(0x07)
+
 class HudsonBuildLight:
         
     def __init__(self, host, port, jobs):
@@ -86,7 +94,7 @@ class HudsonBuildLight:
         # not mapped colors will default to blue
         # other colors returned by hudson: blue_anime red_anime grey grey_anime aborted
         self.color_map = { 'blue':'green', 'red':'red' }
-        self.default_color = 'red'
+        self.default_color = 'all'
 
     def get_usbled(self):
         platform = os.uname()[0].lower()
@@ -113,7 +121,7 @@ class HudsonBuildLight:
             return self.default_color
         
     def set_usbled_color(self, color):
-        methods_map = { 'red':self.usbled.red, 'green':self.usbled.green, 'blue':self.usbled.blue, 'off':self.usbled.off }
+        methods_map = { 'red':self.usbled.red, 'green':self.usbled.green, 'blue':self.usbled.blue, 'off':self.usbled.off, 'all':self.usbled.all}
         method = methods_map[color]
         method()
 
