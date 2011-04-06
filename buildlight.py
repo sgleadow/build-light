@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import re
+import urllib2
 
 try:
 	import usb.core
@@ -106,15 +107,16 @@ class HudsonBuildLight:
 
     def get_job_color(self, jobname):
         try:
-            conn = httplib.HTTPConnection(self.host, self.port)
-            conn.request('GET','/jenkins/job/%s/api/python' % jobname)
-            job = eval(conn.getresponse().read())
+            url = 'http://%s:%s/jenkins/job/%s/api/python' % (self.host, self.port, jobname)
+            conn = urllib2.urlopen(url)
+            job = eval(conn.read())
         except Exception as e:
             print "ERROR: exception getting job"
             print e
             return self.default_color
 
         job_color = job['color']
+        print '%s color: %s' % (jobname, job_color)
         if self.color_map.has_key(job_color):
             return self.color_map[job_color]
         else:
