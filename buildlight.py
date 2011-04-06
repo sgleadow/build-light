@@ -118,7 +118,7 @@ class HudsonBuildLight:
         if self.color_map.has_key(job_color):
             return self.color_map[job_color]
         else:
-            return self.default_color
+            return job_color
         
     def set_usbled_color(self, color):
         methods_map = { 'red':self.usbled.red, 'green':self.usbled.green, 'blue':self.usbled.blue, 'off':self.usbled.off, 'all':self.usbled.all}
