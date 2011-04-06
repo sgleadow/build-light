@@ -116,7 +116,6 @@ class HudsonBuildLight:
             return self.default_color
 
         job_color = job['color']
-        print '%s color: %s' % (jobname, job_color)
         if self.color_map.has_key(job_color):
             return self.color_map[job_color]
         else:
