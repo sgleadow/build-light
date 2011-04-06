@@ -93,7 +93,7 @@ class HudsonBuildLight:
         
         # not mapped colors will default to blue
         # other colors returned by hudson: blue_anime red_anime grey grey_anime aborted
-        self.color_map = { 'blue':'green', 'red':'red' }
+        self.color_map = { 'blue':'green', 'red':'red', 'blue_anime':'blue' }
         self.default_color = 'all'
 
     def get_usbled(self):
