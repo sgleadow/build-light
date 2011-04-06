@@ -144,14 +144,23 @@ class HudsonBuildLight:
         
         return self.default_color
 
+    def get_new_color(self):
+        try:
+            conn = urllib2.urlopen("http://www.google.com")
+            conn.read(100)
+            return self.reduce_colors()
+        except Exception as e:
+            print 'not on the internet, error: %s' % (e)
+            self.default_color
+
     def loop(self):
         self.set_usbled_color(self.default_color)
-		
-        last_color = self.reduce_colors()
+
+        last_color = self.get_new_color()
         self.set_usbled_color(last_color)
 
         while True:
-            color = self.reduce_colors()
+            color = self.get_new_color()
             if color != last_color:
                 self.set_usbled_color(color)
                 last_color = color
