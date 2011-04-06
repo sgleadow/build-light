@@ -108,10 +108,12 @@ class HudsonBuildLight:
     def get_job_color(self, jobname):
         try:
             url = 'http://%s:%s/jenkins/job/%s/api/python' % (self.host, self.port, jobname)
+            print 'getting job %s' % (jobname)
             conn = urllib2.urlopen(url)
             job = eval(conn.read())
         except Exception as e:
             print "ERROR: exception getting job"
+            print "url: %s" % (url)
             print e
             return self.default_color
 
