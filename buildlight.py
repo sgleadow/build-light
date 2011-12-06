@@ -1,4 +1,3 @@
-
 import httplib
 import time
 import os
@@ -7,10 +6,10 @@ import re
 import urllib2
 
 try:
-	import usb.core
-	import usb.util
+    import usb.core
+    import usb.util
 except Exception:
-	pass # only required for mac os
+    pass # only required for mac os
 
 class UsbLedLinux:    
     
@@ -52,10 +51,18 @@ class UsbLedLinux:
 class UsbLedMac:
     
     def __init__(self):
-        self.dev = usb.core.find(idVendor=0x0fc5, idProduct=0x1223)
+        self.reconnect()
+
+    def reconnect(self):
+        new_dev = usb.core.find(idVendor=0x0fc5, idProduct=0x1223)
+        if new_dev:
+            try:
+                new_dev.set_configuration()
+                self.dev = new_dev
+            except usb.core.USBError:
+                pass
         if self.dev is None:
             raise ValueError('Device not found')
-        self.dev.set_configuration()
 
     def send(self, color):
         try:
@@ -66,8 +73,15 @@ class UsbLedMac:
                                    data_or_wLength=0x00000008)
 
         # a pipe error is thrown even if the operation is successful
-        except usb.core.USBError: 
-            pass
+        except usb.core.USBError as e: 
+            if 'Pipe error' in e.args[0]:
+                print '->'
+            else:
+                print e
+                print "Trying to reconnect..."
+                self.reconnect()
+
+            
     
     def red(self):
         self.send(0x02)
@@ -89,7 +103,11 @@ class HudsonBuildLight:
     def __init__(self, host, port, jobs):
         self.host = host
         self.port = port
-        self.jobs = jobs
+        if jobs:
+            self.jobs = jobs
+        else:
+            self.jobs = self.get_all_job_names()
+        print self.jobs
         self.usbled = self.get_usbled()
         
         self.color_map = { 'blue':'green', 'red':'red', 'blue_anime':'blue', 'red_anime':'blue', 'grey':'all', 'grey_anime':'all' }
@@ -120,6 +138,12 @@ class HudsonBuildLight:
             return self.color_map[job_color]
         else:
             return job_color
+
+    def get_all_job_names(self):
+        url = 'http://%s:%s/jenkins/api/python' % (self.host, self.port)
+        conn = urllib2.urlopen(url)
+        data = eval(conn.read())
+        return [job['name'].replace(' ', '%20') for job in data['jobs'] if job['color'] != 'disabled']
         
     def set_usbled_color(self, color):
         methods_map = { 'red':self.usbled.red, 'green':self.usbled.green, 'blue':self.usbled.blue, 'off':self.usbled.off, 'all':self.usbled.all}
@@ -127,7 +151,7 @@ class HudsonBuildLight:
         method()
 
     def map_colors(self):
-        return map(lambda col: self.get_job_color(col), self.jobs)
+        return map(self.get_job_color, self.jobs)
 
     def pick_color(self, colors, color):
         return any( map(lambda job: (job == color), colors))
@@ -143,13 +167,7 @@ class HudsonBuildLight:
         return self.default_color
 
     def get_new_color(self):
-        try:
-            conn = urllib2.urlopen("http://www.google.com")
-            conn.read(100)
-            return self.reduce_colors()
-        except Exception as e:
-            print 'not on the internet, error: %s' % (e)
-            self.default_color
+        return self.reduce_colors()		
 
     def loop(self):
         self.set_usbled_color(self.default_color)
@@ -159,7 +177,7 @@ class HudsonBuildLight:
 
         while True:
             color = self.get_new_color()
-            if color != last_color:
+            if True: #color != last_color:
                 self.set_usbled_color(color)
                 last_color = color
-            time.sleep(1)
+            time.sleep(2)
