@@ -123,7 +123,7 @@ class HudsonBuildLight:
 
     def get_job_color(self, jobname):
         try:
-            url = 'http://%s:%s/jenkins/job/%s/api/python' % (self.host, self.port, jobname)
+            url = 'http://%s:%s/job/%s/api/python' % (self.host, self.port, jobname)
             print 'getting job %s' % (jobname)
             conn = urllib2.urlopen(url)
             job = eval(conn.read())
@@ -140,7 +140,7 @@ class HudsonBuildLight:
             return job_color
 
     def get_all_job_names(self):
-        url = 'http://%s:%s/jenkins/api/python' % (self.host, self.port)
+        url = 'http://%s:%s/api/python' % (self.host, self.port)
         conn = urllib2.urlopen(url)
         data = eval(conn.read())
         return [job['name'].replace(' ', '%20') for job in data['jobs'] if job['color'] != 'disabled']
